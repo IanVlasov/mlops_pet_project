@@ -46,10 +46,6 @@ jobs:
           poetry install --no-interaction --no-root -E tests
         if: steps.cache-deps.outputs.cache-hit != 'true'
 
-      - name: Install Pre-commit
-        run: |
-          poetry install --no-interaction pre-commit
-
       - name: Install Package
         run: |
           poetry install --no-interaction

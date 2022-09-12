@@ -41,3 +41,11 @@ and model design.
   - Makefiles
   - Pre-commit hooks
   - CI/CD pipeline
+
+## Instructions
+
+### Prerequisites
+
+* [Docker](https://docs.docker.com/get-docker/)
+* [Poetry](https://python-poetry.org/docs/)
+* [AWS CLI](https://aws.amazon.com/cli/)
