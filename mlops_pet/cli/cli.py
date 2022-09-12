@@ -38,16 +38,16 @@ def setup(
     kinesis_endpoint_uri: str = typer.Option("", prompt="Kinesis Endpoint URL"),
     prediction_stream_name: str = typer.Option("fare_predictions", prompt="Prediction Stream Name"),
 ):
-    definitions.AWS_ACCESS_KEY_ID = aws_access_key_id
-    definitions.AWS_SECRET_ACCESS_KEY = aws_secret_access_key
-    definitions.MLFLOW_S3_ENDPOINT_URL = mlflow_s3_endpoint_url
-    definitions.MLFLOW_TRACKING_URI = mlflow_tracking_uri
-    definitions.MLFLOW_PORT = mlflow_port
-    definitions.EXPERIMENT_NAME = mlflow_experiment_name
-    definitions.PREFECT_API_URL = prefect_api_url
-    definitions.PREFECT_PORT = prefect_port
-    definitions.KINESIS_ENDPOINT_URL = kinesis_endpoint_uri
-    definitions.PREDICTIONS_STREAM_NAME = prediction_stream_name
+    os.system(f"export AWS_ACCESS_KEY_ID = {aws_access_key_id}")
+    os.system(f"export AWS_SECRET_ACCESS_KEY = {aws_secret_access_key}")
+    os.system(f"export MLFLOW_S3_ENDPOINT_URL = {mlflow_s3_endpoint_url}")
+    os.system(f"export MLFLOW_TRACKING_URI = {mlflow_tracking_uri}")
+    os.system(f"export MLFLOW_PORT = {mlflow_port}")
+    os.system(f"export EXPERIMENT_NAME = {mlflow_experiment_name}")
+    os.system(f"export PREFECT_API_URL = {prefect_api_url}")
+    os.system(f"export PREFECT_PORT = {prefect_port}")
+    os.system(f"export KINESIS_ENDPOINT_URL = {kinesis_endpoint_uri}")
+    os.system(f"export PREDICTIONS_STREAM_NAME = {prediction_stream_name}")
 
 
 @app.command(help="Run training pipeline")
@@ -65,7 +65,7 @@ def train(
     pipelines.training_flow(date=date, num_trials=num_trials)
 
 
-@app.command(help="Register best model from existing runs")
+@app.command(help="Register best model from existing runs based on the lowest RMSE value.")
 def register_best_model(
     test: bool = typer.Option(False, help="Use it to run a local test run"),
 ):

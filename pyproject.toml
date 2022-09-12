@@ -35,7 +35,6 @@ tests = [
     "greenlet",
     "localstack",
     "PyMySQL",
-    "pre-commit"
 ]
 deployment = ["aws-cdk-lib", "constructs", "exceptiongroup"]
 eda = ["jupyter", "matplotlib"]

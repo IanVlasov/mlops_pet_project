@@ -22,7 +22,7 @@ sync: ## Merge changes from main branch to your current branch
 test: ## Run tests
 	pytest ./tests/unit
 
-build: style test
+build: test
 	docker build -t ${LOCAL_IMAGE_NAME} .
 
 integration_test: build
