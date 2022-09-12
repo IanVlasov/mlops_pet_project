@@ -1,0 +1,61 @@
+on:
+  push:
+    branches:
+      - main
+  pull_request: ~
+name: Lint
+env:
+  CACHE_VERSION: 2
+  DEFAULT_PYTHON: 3.8
+jobs:
+  black:
+    name: "Black"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v2.3.4
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        id: python
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+      - name: Install Python packages
+        run: pip install black==22.6.0
+      - name: Run Black
+        run: |
+          echo "::add-matcher::.github/matchers/black.json"
+          black --check --line-length 100 .
+          echo "::remove-matcher owner=black::"
+  mypy:
+    name: "Mypy"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v2.3.4
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        id: python
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+      - name: Install Python packages
+        run: pip install mypy==0.971
+      - name: Install pcregrep
+        run: |
+          sudo apt-get -y install pcregrep
+      - name: Run Mypy
+        run: |
+          set -o pipefail
+          echo "::add-matcher::.github/matchers/mypy.json"
+          mypy \
+            --install-types --non-interactive \
+            --ignore-missing-imports \
+            --follow-imports=silent \
+            --show-column-numbers \
+            --python-version 3.8 \
+            --exclude qflow/templates \
+            qflow 2>&1 >/dev/null | \
+            pcregrep -M -o '\S+:[0-9]*:[0-9]*: [a-z]*: [^\:]+\]$' || true | \
+            sed -r 's/(.*:[0-9]*:[0-9]*:)/mypy-block\1/g' | \
+            tr '\n' ' ' | sed 's/mypy-block/\n/g'
+          echo ""
+          echo "::remove-matcher owner=mypy::"

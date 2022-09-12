@@ -1,3 +1,5 @@
+LOCAL_TAG:=$(shell date +"%Y-%m-%d-%H-%M")
+LOCAL_IMAGE_NAME:=stream-model-duration:${LOCAL_TAG}
 
 help:  ## Show help
 	@grep -E '^[.a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -18,4 +20,10 @@ sync: ## Merge changes from main branch to your current branch
 	git merge main
 
 test: ## Run tests
-	pytest
+	pytest ./tests/unit
+
+build: style test
+	docker build -t ${LOCAL_IMAGE_NAME} .
+
+integration_test: build
+	LOCAL_IMAGE_NAME=${LOCAL_IMAGE_NAME} bash ./tests/integration/run.sh
