@@ -1,0 +1,90 @@
+services:
+  backend:
+    image: ${LOCAL_IMAGE_NAME}
+    ports:
+      - "8080:8080"
+    environment:
+      - PREDICTIONS_STREAM_NAME=${PREDICTIONS_STREAM_NAME}
+      - RUN_ID=Test123
+      - AWS_DEFAULT_REGION=${AWS_REGION}
+      - MLFLOW_TRACKING_URI=http://mlflow:5001/
+      - MODEL_NAME=${MODEL_NAME}
+      - KINESIS_ENDPOINT_URL=http://kinesis:4566/
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+
+  kinesis:
+    image: localstack/localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=kinesis
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2022-09-07T22-25-02Z
+    restart: unless-stopped
+    hostname: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=${AWS_ACCESS_KEY_ID}
+      - MINIO_ROOT_PASSWORD=${AWS_SECRET_ACCESS_KEY}
+    command: server --console-address ":9001" /data
+    volumes:
+      - minio_volume:/data
+  db:
+    image: mysql/mysql-server
+    restart: unless-stopped
+    container_name: mlflow_db
+    expose:
+      - "3306"
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - db_volume:/var/lib/mysql
+
+  mlflow:
+    container_name: tracker_mlflow
+    image: tracker_ml
+    restart: unless-stopped
+    hostname: mlflow
+    build:
+      context: ./mlflow
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_REGION}
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+    entrypoint: bash ./wait-for-it.sh db:3306 -t 90 -- mlflow server --backend-store-uri mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE} --artifacts-destination s3://${AWS_BUCKET_NAME}/ --serve-artifacts -h 0.0.0.0 --port 5001
+
+  create_s3_buckets:
+    image: minio/mc
+    depends_on:
+      - "minio"
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc alias set minio http://minio:9000 '${AWS_ACCESS_KEY_ID}' '${AWS_SECRET_ACCESS_KEY}') do echo '...waiting...' && sleep 1; done;
+      /usr/bin/mc mb minio/mlflow;
+      exit 0;
+      "
+
+  prefect:
+    restart: always
+    build: ../../cloudformation/prefect_container
+    image: prefect_server
+    container_name: prefect_server
+    ports:
+      - "4201:4201"
+    command: sh -c "prefect config set PREFECT_ORION_UI_API_URL="http://0.0.0.0:4201/api" && prefect orion start --host 0.0.0.0 --port 4201"
+
+volumes:
+  db_volume:
+  minio_volume:
