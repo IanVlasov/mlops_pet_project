@@ -1,3 +1,8 @@
+import os
+from datetime import datetime
+
+from pandas import DataFrame
+
 from mlops_pet.deployment.model import utils
 
 
@@ -7,36 +12,25 @@ class ModelService:
         self.model_version = model_version
         self.callbacks = callbacks or []
 
-    def prepare_features(self, ride):
-        features = {}
-        features["PU_DO"] = f"{ride['PULocationID']}_{ride['DOLocationID']}"
-        features["trip_distance"] = ride["trip_distance"]
-        return features
-
     def predict(self, features):
         pred = self.model.predict(features)
         return float(pred[0])
 
     def lambda_handler(self, event):
-        # print(json.dumps(event))
-
         predictions_events = []
 
         for record in event["Records"]:
             encoded_data = record["kinesis"]["data"]
             ride_event = utils.base64_decode(encoded_data)
-
-            # print(ride_event)
             ride = ride_event["ride"]
             ride_id = ride_event["ride_id"]
 
-            features = self.prepare_features(ride)
+            features = _prepare_features(ride)
             prediction = self.predict(features)
 
             prediction_event = {
-                "model": "ride_duration_prediction_model",
                 "version": self.model_version,
-                "prediction": {"ride_duration": prediction, "ride_id": ride_id},
+                "prediction": {"fare_prediction": prediction, "ride_id": ride_id},
             }
 
             for callback in self.callbacks:
@@ -45,3 +39,15 @@ class ModelService:
             predictions_events.append(prediction_event)
 
         return {"predictions": predictions_events}
+
+
+def _prepare_features(ride):
+    features = {}
+    pickup_time = datetime.fromisoformat(ride["pickup_datetime"])
+
+    features["passenger_count"] = [ride["passenger_count"]]
+    features["trip_distance"] = [ride["trip_distance"]]
+    features["pickup_hour"] = [pickup_time.hour]
+    features["pickup_minutes"] = [pickup_time.minute]
+    features["weekday"] = [pickup_time.weekday()]
+    return DataFrame.from_dict(features)

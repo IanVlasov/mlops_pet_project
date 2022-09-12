@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hyperopt
 import mlflow
+import numpy as np
 from hyperopt import hp, tpe
 from hyperopt.pyll import scope
 from numpy import typing as npt
@@ -62,5 +63,5 @@ def train_model(
         algo=tpe.suggest,
         max_evals=num_trials,
         trials=hyperopt.Trials(),
-        rstate=random_state,
+        rstate=np.random.default_rng(random_state) if random_state else None,
     )

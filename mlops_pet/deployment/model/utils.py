@@ -1,10 +1,11 @@
 import base64
 import json
+import os
 
 import boto3
 import mlflow
 
-from mlops_pet import definitions
+mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
 
 
 def load_model(model_name: str, stage: str = "Production"):
@@ -20,7 +21,7 @@ def base64_decode(encoded_data):
 
 
 def create_kinesis_client():
-    endpoint_url = definitions.KINESIS_ENDPOINT_URL
+    endpoint_url = os.getenv("KINESIS_ENDPOINT_URL")
     if endpoint_url is None:
         return boto3.client("kinesis")
     return boto3.client("kinesis", endpoint_url=endpoint_url)

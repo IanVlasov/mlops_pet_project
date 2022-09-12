@@ -6,6 +6,7 @@ PROJECT_ROOT = Path(__file__).parent
 TESTS_ROOT = Path(__file__).parent / ".." / "tests"
 
 TEST_RUN = False
+RANDOM_STATE = 123 if TEST_RUN else None
 
 # AWS
 AWS_ACCESS_KEY_ID = "minio" if TEST_RUN else os.getenv("AWS_ACCESS_KEY_ID", "minio")
@@ -34,7 +35,7 @@ PREFECT_API_URL = (
 PREFECT_PORT = "4201" if TEST_RUN else os.getenv("PREFECT_PORT", "4201")
 
 # KINESIS
-KINESIS_ENDPOINT_URL = os.getenv("KINESIS_ENDPOINT_URL", "")
+KINESIS_ENDPOINT_URL = os.getenv("KINESIS_ENDPOINT_URL", "http://localhost:4566")
 PREDICTIONS_STREAM_NAME = (
     "fare_predictions" if TEST_RUN else os.getenv("PREDICTIONS_STREAM_NAME", "fare_predictions")
 )

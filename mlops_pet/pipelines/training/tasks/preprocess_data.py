@@ -13,7 +13,7 @@ def preprocess_data(year: str, month: str) -> tuple[pd.DataFrame, pd.Series]:
     data = pd.read_parquet(data_uri)
 
     targets = data.fare_amount.copy()
-    features = pd.DataFrame(data["passenger_count"].copy())
+    features = pd.DataFrame(data[["passenger_count", "trip_distance"]].copy())
     features.passenger_count.fillna(1, inplace=True)
     features["pickup_hour"] = data["tpep_pickup_datetime"].dt.hour
     features["pickup_minutes"] = data["tpep_pickup_datetime"].dt.minute

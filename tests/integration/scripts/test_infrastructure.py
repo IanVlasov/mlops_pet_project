@@ -16,6 +16,7 @@ def test_infrastructure():
     runs = client.search_runs(experiment_ids=exp.experiment_id)
     # assert len(runs) == 2
     result = runner.invoke(cli.app, ["register-best-model", "--test"])
+    print("Infrastructure was successfully tested.")
 
 
 if __name__ == "__main__":

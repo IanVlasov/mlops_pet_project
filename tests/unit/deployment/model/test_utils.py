@@ -11,9 +11,9 @@ def test_base64_decode():
     result = utils.base64_decode(base64_input)
     expected = {
         "ride": {
-            "PULocationID": 130,
-            "DOLocationID": 205,
+            "passenger_count": 1,
             "trip_distance": 3.66,
+            "pickup_datetime": "2022-01-01 09:15:00",
         },
         "ride_id": 256,
     }

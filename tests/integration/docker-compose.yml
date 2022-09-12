@@ -1,25 +1,25 @@
 services:
-  #  backend:
-  #    image: ${LOCAL_IMAGE_NAME}
-  #    ports:
-  #      - "8080:8080"
-  #    environment:
-  #      - PREDICTIONS_STREAM_NAME=${PREDICTIONS_STREAM_NAME}
-  #      - RUN_ID=Test123
-  #      - AWS_DEFAULT_REGION=eu-west-1
-  #      - MODEL_LOCATION=/app/model
-  #      - KINESIS_ENDPOINT_URL=http://kinesis:4566/
-  #      - AWS_ACCESS_KEY_ID=abc
-  #      - AWS_SECRET_ACCESS_KEY=xyz
-  #    volumes:
-  #      - "./model:/app/model"
-  #
-  #  kinesis:
-  #    image: localstack/localstack
-  #    ports:
-  #      - "4566:4566"
-  #    environment:
-  #      - SERVICES=kinesis
+  backend:
+    image: ${LOCAL_IMAGE_NAME}
+    ports:
+      - "8080:8080"
+    environment:
+      - PREDICTIONS_STREAM_NAME=${PREDICTIONS_STREAM_NAME}
+      - RUN_ID=Test123
+      - AWS_DEFAULT_REGION=${AWS_REGION}
+      - MLFLOW_TRACKING_URI=http://mlflow:5001/
+      - MODEL_NAME=${MODEL_NAME}
+      - KINESIS_ENDPOINT_URL=http://kinesis:4566/
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+
+  kinesis:
+    image: localstack/localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=kinesis
 
   minio:
     image: quay.io/minio/minio:RELEASE.2022-09-07T22-25-02Z
@@ -52,6 +52,7 @@ services:
     container_name: tracker_mlflow
     image: tracker_ml
     restart: unless-stopped
+    hostname: mlflow
     build:
       context: ./mlflow
       dockerfile: Dockerfile
@@ -62,7 +63,7 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_DEFAULT_REGION=${AWS_REGION}
       - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
-    entrypoint: bash ./wait-for-it.sh db:3306 -t 90 -- mlflow server --backend-store-uri mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE} --default-artifact-root s3://${AWS_BUCKET_NAME}/ -h 0.0.0.0 --port 5001
+    entrypoint: bash ./wait-for-it.sh db:3306 -t 90 -- mlflow server --backend-store-uri mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE} --artifacts-destination s3://${AWS_BUCKET_NAME}/ --serve-artifacts -h 0.0.0.0 --port 5001
 
   create_s3_buckets:
     image: minio/mc

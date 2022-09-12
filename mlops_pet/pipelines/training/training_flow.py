@@ -26,5 +26,14 @@ def main(
     year = date.year
 
     features, targets = tasks.preprocess_data(year=year, month=month)
-    x_train, x_test, y_train, y_test = tasks.split(data=features, targets=targets)
-    tasks.train_model(x_train, x_test, y_train, y_test, num_trials=num_trials)
+    x_train, x_test, y_train, y_test = tasks.split(
+        data=features, targets=targets, random_state=definitions.RANDOM_STATE
+    )
+    tasks.train_model(
+        x_train,
+        x_test,
+        y_train,
+        y_test,
+        num_trials=num_trials,
+        random_state=definitions.RANDOM_STATE,
+    )

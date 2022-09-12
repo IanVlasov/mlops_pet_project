@@ -136,6 +136,49 @@ class DeploymentStack(Stack):
             id="Prefect",
             task_role=role,
         )
+        # ==================================================
+        # ============== MLFLOW CONTAINER ==================
+        # ==================================================
+
+        mlflow_port = 5000
+
+        container_mlflow = task_definition_mlflow.add_container(
+            id="Mlflow_Container",
+            image=ecs.ContainerImage.from_asset(directory="mlflow_container"),
+            environment={
+                "BUCKET": f"s3://{artifact_bucket.bucket_name}",
+                "HOST": database.db_instance_endpoint_address,
+                "PORT": str(port),
+                "DATABASE": db_name,
+                "USERNAME": username,
+                "MLFLOW_PORT": str(mlflow_port),
+            },
+            secrets={"PASSWORD": ecs.Secret.from_secrets_manager(db_password_secret)},
+            logging=ecs.LogDriver.aws_logs(stream_prefix="mlflow"),
+        )
+        port_mapping = ecs.PortMapping(
+            container_port=mlflow_port, host_port=mlflow_port, protocol=ecs.Protocol.TCP
+        )
+        container_mlflow.add_port_mappings(port_mapping)
+
+        # ==================================================
+        # ============= PREFECT CONTAINER ==================
+        # ==================================================
+        prefect_port = 4200
+
+        container_prefect = task_definition_prefect.add_container(
+            id="Prefect_Container",
+            image=ecs.ContainerImage.from_asset(directory="prefect_container"),
+            logging=ecs.LogDriver.aws_logs(stream_prefix="prefect"),
+            environment={
+                "PREFECT_PORT": str(prefect_port),
+            },
+        )
+        port_mapping = ecs.PortMapping(
+            container_port=prefect_port, host_port=prefect_port, protocol=ecs.Protocol.TCP
+        )
+        container_prefect.add_port_mappings(port_mapping)
+        container_prefect.add_port_mappings(port_mapping)
 
         # ==================================================
         # ======== FARGATE SERVICE ==================
@@ -156,6 +199,10 @@ class DeploymentStack(Stack):
             service_name=service_name_prefect,
             cluster=cluster,
             task_definition=task_definition_prefect,
+        )
+
+        container_prefect.add_environment(
+            name="EXTERNAL_URL", value=fargate_service_prefect.load_balancer.load_balancer_dns_name
         )
 
         # Setup security group
@@ -188,50 +235,6 @@ class DeploymentStack(Stack):
             value=fargate_service_prefect.load_balancer.load_balancer_dns_name,
         )
         CfnOutput(scope=self, id="MLFlowArtifactBucketName", value=artifact_bucket.bucket_name)
-
-        # ==================================================
-        # ============== MLFLOW CONTAINER ==================
-        # ==================================================
-
-        mlflow_port = 5000
-
-        container_mlflow = task_definition_mlflow.add_container(
-            id="Mlflow_Container",
-            image=ecs.ContainerImage.from_asset(directory="mlflow_container"),
-            environment={
-                "BUCKET": f"s3://{artifact_bucket.bucket_name}",
-                "HOST": database.db_instance_endpoint_address,
-                "PORT": str(port),
-                "DATABASE": db_name,
-                "USERNAME": username,
-                "MLFLOW_PORT": mlflow_port,
-            },
-            secrets={"PASSWORD": ecs.Secret.from_secrets_manager(db_password_secret)},
-            logging=ecs.LogDriver.aws_logs(stream_prefix="mlflow"),
-        )
-        port_mapping = ecs.PortMapping(
-            container_port=mlflow_port, host_port=mlflow_port, protocol=ecs.Protocol.TCP
-        )
-        container_mlflow.add_port_mappings(port_mapping)
-
-        # ==================================================
-        # ============= PREFECT CONTAINER ==================
-        # ==================================================
-        prefect_port = 4200
-
-        container_prefect = task_definition_prefect.add_container(
-            id="Prefect_Container",
-            image=ecs.ContainerImage.from_asset(directory="prefect_container"),
-            logging=ecs.LogDriver.aws_logs(stream_prefix="prefect"),
-            environment={
-                "PREFECT_PORT": prefect_port,
-                "EXTERNAL_URL": fargate_service_prefect.load_balancer.load_balancer_dns_name,
-            },
-        )
-        port_mapping = ecs.PortMapping(
-            container_port=prefect_port, host_port=prefect_port, protocol=ecs.Protocol.TCP
-        )
-        container_prefect.add_port_mappings(port_mapping)
 
 
 def setup_autoscaling(

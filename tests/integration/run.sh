@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 cd "$(dirname "$0")"
+source .env
 
 if [ "${LOCAL_IMAGE_NAME}" == "" ]; then
     LOCAL_TAG=`date +"%Y-%m-%d-%H-%M"`
@@ -9,9 +10,6 @@ if [ "${LOCAL_IMAGE_NAME}" == "" ]; then
 else
     echo "no need to build image ${LOCAL_IMAGE_NAME}"
 fi
-
-export PREDICTIONS_STREAM_NAME="fare_predictions"
-source .env
 
 docker-compose up -d
 
@@ -23,29 +21,17 @@ aws --endpoint-url=http://localhost:4566 \
     --shard-count 1
 
 poetry run integration-test-script
-
-#pipenv run python test_docker.py
+poetry run test-lambda
 
 ERROR_CODE=$?
 
-#if [ ${ERROR_CODE} != 0 ]; then
-#    docker-compose logs
-#    docker-compose down
-#    docker volume rm integration_db_volume
-#    docker volume rm integration_minio_volume
-#    exit ${ERROR_CODE}
-#fi
-#
-#
-#pipenv run python test_kinesis.py
-#
-#ERROR_CODE=$?
-#
-#if [ ${ERROR_CODE} != 0 ]; then
-#    docker-compose logs
-#    docker-compose down
-#    exit ${ERROR_CODE}
-#fi
+if [ ${ERROR_CODE} != 0 ]; then
+    docker-compose logs
+    docker-compose down
+    docker volume rm integration_db_volume
+    docker volume rm integration_minio_volume
+    exit ${ERROR_CODE}
+fi
 
 docker-compose down
 docker volume rm integration_db_volume

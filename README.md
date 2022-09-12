@@ -5,17 +5,16 @@
 - [x] Problem description can be found below.
 - [x] Project infrastructure is deployed using IaC (CloudFormation)
 - [x] Experiment tracking and model registry are used (MLFlow)
-- [ ] Workflow deployment (Prefect)
-- [x] Containerize model deployment code (Docker)
-- [ ] The model deployment code is containerized and could be deployed on cloud
+- [x] Basic workflow orchestration (Prefect)
+- [x] The model deployment code is containerized and can be deployed on cloud
 - [ ] No model monitoring.
-- [ ] Instructions can be found below.
+- [x] Instructions can be found below.
 - [x] Unit tests
 - [x] Integration tests
 - [x] Linters
 - [x] Makefile
 - [x] pre-commit hooks
-- [ ] CI/CD pipeline
+- [x] CI/CD pipeline
 
 ## Project description
 
@@ -46,6 +45,78 @@ and model design.
 
 ### Prerequisites
 
-* [Docker](https://docs.docker.com/get-docker/)
-* [Poetry](https://python-poetry.org/docs/)
-* [AWS CLI](https://aws.amazon.com/cli/)
+- [Docker](https://docs.docker.com/get-docker/)
+- [Poetry](https://python-poetry.org/docs/)
+- [AWS CLI](https://aws.amazon.com/cli/)
+
+### Data and model description
+
+As it has already been mentioned, here NYC Yellow Taxi dataset is used. The model will predict fare amount based on several
+features: `passengers_count`, `trip_distance`, `pickup_hour`, `pickup_minutes`, `day of week`.
+In the `mlops_pet/pipelines` folder the training and deployment code can be found. They are organized in prefect flows and split on tasks.
+
+### First steps
+
+To install the project with all extras simply run
+
+```
+poetry install -E tests -E deployment -E eda
+```
+
+This command will install simple CLI commands which you can execute using `mlops_pet` package.
+First of all you need to setup your environment variables. Please, run
+
+```
+mlops_pet setup
+```
+
+in your terminal and fill the values. At startup default values are configured to successfully run
+integration tests.
+
+You can run `mlops_pet --help` command to see other available commands
+
+### Tests
+
+To run tests which are defined in the Makefile type
+
+```
+make integration_test
+```
+
+This command will start the full test pipeline including unit tests which are required for
+the integration test.
+
+The integration test repeats production infrastructure locally using docker to start MLFlow and Prefect
+servers with the necessary storages and databases. It trains model, registers it, pulls it from the registry and uses it to make
+predictions using Kinesis stream.
+
+### Production infrastructure
+
+The whole infrastructure is defined in cloudformation folder. It consists of:
+
+- MLFlow server with Postgres DB and S3 bucket for tracking and storage servers.
+- Prefect server
+
+To deploy this infrastructure using your AWS account run
+
+```
+bash ./cloudformation/deploy-stack.sh
+```
+
+> **NB!**
+> Running this command you may be charged for using some resources on AWS.
+
+> **NB!**
+> Current infrastructure is configured to be open for everyone in demonstration purpposes.
+> Be sure you have prepared additional security steps before deploying this code into your
+> organization workflow.
+
+As outputs you will get several links for MLFlow server, Prefect server and S3 bucket.
+You can use them to setup production infrastructure by running `mlops_pet setup`.
+
+### Best practices
+
+- Simple unit tests and integration tests can be found in `tests` folder
+- Pre-commit hooks setup several checks including linters. The setup can be found in `.pre-commit-config.yaml`
+- `Makefile` is available in the root directory
+- Simple CI/CD pipeline job can be found in the following demonstration [Merge request](https://github.com/IanVlasov/mlops_pet_project/pull/1). The definition of github actions is available in `.github` folder.

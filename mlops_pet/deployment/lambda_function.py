@@ -1,9 +1,10 @@
-from mlops_pet import definitions
+import os
+
 from mlops_pet.deployment import model
 
-PREDICTIONS_STREAM_NAME = definitions.PREDICTIONS_STREAM_NAME
-MODEL_NAME = definitions.MODEL_NAME
-TEST_RUN = definitions.TEST_RUN
+PREDICTIONS_STREAM_NAME = os.getenv("PREDICTIONS_STREAM_NAME")
+MODEL_NAME = os.getenv("MODEL_NAME")
+TEST_RUN = os.getenv("TEST_RUN", "False") == "True"
 
 
 model_service: model.service.ModelService = model.init(

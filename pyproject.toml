@@ -26,6 +26,7 @@ localstack = {version = "^1.1.0", optional = true}
 PyMySQL = {version = "^1.0.2", optional = true}
 matplotlib = {version = "^3.5.3", optional = true}
 jupyter = {version = "^1.0.0", optional = true}
+deepdiff = {version = "^5.8.1", optional = true}
 
 [tool.poetry.extras]
 tests = [
@@ -35,6 +36,7 @@ tests = [
     "greenlet",
     "localstack",
     "PyMySQL",
+    "deepdiff"
 ]
 deployment = ["aws-cdk-lib", "constructs", "exceptiongroup"]
 eda = ["jupyter", "matplotlib"]
@@ -60,6 +62,7 @@ pytest-cov = "^3.0.0"
 [tool.poetry.scripts]
 mlops_pet = "mlops_pet.cli:main"
 integration-test-script = "tests.integration.scripts.test_infrastructure:test_infrastructure"
+test-lambda = "tests.integration.scripts.test_lambda:test_lambda"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
