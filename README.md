@@ -119,4 +119,4 @@ You can use them to setup production infrastructure by running `mlops_pet setup`
 - Simple unit tests and integration tests can be found in `tests` folder
 - Pre-commit hooks setup several checks including linters. The setup can be found in `.pre-commit-config.yaml`
 - `Makefile` is available in the root directory
-- Simple CI/CD pipeline job can be found in the following demonstration [Merge request](https://github.com/IanVlasov/mlops_pet_project/pull/1). The definition of github actions is available in `.github` folder.
+- Simple CI/CD pipeline job can be found in the following demonstration [Merge request](https://github.com/IanVlasov/mlops_pet_project/pull/2). The definition of github actions is available in `.github` folder.
