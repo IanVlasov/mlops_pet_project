@@ -17,14 +17,10 @@ MLFLOW_S3_ENDPOINT_URL = (
     else os.getenv("MLFLOW_S3_ENDPOINT_URL", "http://0.0.0.0:9000")
 )
 MLFLOW_TRACKING_URI = (
-    "http://0.0.0.0:5001/"
-    if TEST_RUN
-    else os.getenv("MLFLOW_TRACKING_URI", "http://0.0.0.0:5001/")
+    "http://0.0.0.0:5001/" if TEST_RUN else os.getenv("MLFLOW_TRACKING_URI", "http://0.0.0.0:5001/")
 )
 MLFLOW_PORT = "5001" if TEST_RUN else os.getenv("MLFLOW_PORT", "5001")
-EXPERIMENT_NAME = (
-    "fare_prediction" if TEST_RUN else os.getenv("EXPERIMENT_NAME", "fare_prediction")
-)
+EXPERIMENT_NAME = "fare_prediction" if TEST_RUN else os.getenv("EXPERIMENT_NAME", "fare_prediction")
 MODEL_NAME = (
     "fare_prediction_model" if TEST_RUN else os.getenv("MODEL_NAME", "fare_prediction_model")
 )

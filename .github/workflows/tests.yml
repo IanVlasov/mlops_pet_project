@@ -6,7 +6,7 @@ on:
 name: Run tests
 env:
   CACHE_VERSION: 2
-  DEFAULT_PYTHON: 3.8
+  DEFAULT_PYTHON: 3.9
 jobs:
   runtests:
     name: Run Tests

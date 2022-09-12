@@ -27,18 +27,17 @@ several simple features. This project does not cover extensive and advanced tech
 and model design.
 
 ### This project covers
-* Demonstrates practical aspects of production ML services.
-* ML model lifecycle:
-  * Training and tracking experiments.
-  * Deployment of the scheduled jobs with the model in Production.
-  * Model deployment as a stream service that runs on cloud
-* Preparing the whole infrastructure for AWS using Infrastructure as Code (IaC) service (CloudFormation).
-* Best practices of software engineering:
-  * Unit tests
-  * Integration tests
-  * Linters
-  * Makefiles
-  * Pre-commit hooks
-  * CI/CD pipeline
 
-
+- Demonstrates practical aspects of production ML services.
+- ML model lifecycle:
+  - Training and tracking experiments.
+  - Deployment of the scheduled jobs with the model in Production.
+  - Model deployment as a stream service that runs on cloud
+- Preparing the whole infrastructure for AWS using Infrastructure as Code (IaC) service (CloudFormation).
+- Best practices of software engineering:
+  - Unit tests
+  - Integration tests
+  - Linters
+  - Makefiles
+  - Pre-commit hooks
+  - CI/CD pipeline

@@ -13,8 +13,6 @@ def init(
         kinesis_callback = kinesis.KinesisCallback(kinesis_client, prediction_stream_name)
         callbacks.append(kinesis_callback.put_record)
 
-    model_service = service.ModelService(
-        model=model, model_version=model_name, callbacks=callbacks
-    )
+    model_service = service.ModelService(model=model, model_version=model_name, callbacks=callbacks)
 
     return model_service
