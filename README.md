@@ -103,6 +103,8 @@ To deploy this infrastructure using your AWS account run
 bash ./cloudformation/deploy-stack.sh
 ```
 
+Be careful, not all defined resources can be available in all zones.
+
 > **NB!**
 > Running this command you may be charged for using some resources on AWS.
 
